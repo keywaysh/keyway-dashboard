@@ -73,18 +73,18 @@ function LoginContentInner() {
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               By signing in, you agree to our{' '}
-              <Link href="/terms" className="text-primary hover:underline">
+              <a href="https://keyway.sh/terms" className="text-primary hover:underline">
                 Terms of Service
-              </Link>
+              </a>
             </p>
           </div>
         </div>
 
         <p className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
           New to Keyway?{' '}
-          <Link href="/" className="text-primary hover:underline">
+          <a href="https://keyway.sh" className="text-primary hover:underline">
             Learn more
-          </Link>
+          </a>
         </p>
       </div>
     </div>
