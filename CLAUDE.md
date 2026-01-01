@@ -8,13 +8,15 @@ Keyway Dashboard is the authenticated Next.js 15 frontend for Keyway secrets man
 
 ## Development Commands
 
+**This project requires pnpm** (uses pnpm workspaces).
+
 ```bash
 pnpm install          # Install dependencies
-pnpm run dev          # Dev server (localhost:3000)
-pnpm run build        # Production build
-pnpm run start        # Start production server
-pnpm run lint         # ESLint
-pnpm run test         # Run tests
+pnpm dev              # Dev server (localhost:3000)
+pnpm build            # Production build
+pnpm start            # Start production server
+pnpm lint             # ESLint
+pnpm test             # Run tests
 ```
 
 ## Architecture

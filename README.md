@@ -1,23 +1,59 @@
 # Keyway Dashboard
 
 [![Keyway Secrets](https://www.keyway.sh/badge.svg?repo=keywaysh/keyway-dashboard)](https://www.keyway.sh/vaults/keywaysh/keyway-dashboard)
+[![Release](https://img.shields.io/github/v/release/keywaysh/keyway-dashboard?color=34D399)](https://github.com/keywaysh/keyway-dashboard/releases)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Authenticated dashboard application for Keyway secrets management.
+**Manage your secrets visually.** The web interface for [Keyway](https://keyway.sh).
+
+<p align="center">
+  <img src=".github/screenshot.png" alt="Keyway Dashboard" width="800">
+</p>
+
+---
+
+## Features
+
+- 🔐 **Visual secret management** — Create, edit, and organize secrets across environments
+- 🔄 **Provider sync** — Push secrets to Vercel, Railway, Netlify, Fly.io
+- 👥 **Team collaboration** — GitHub-based permissions, no separate access control
+- 📊 **Audit trail** — See who accessed what, when, and from where
+- 🚨 **Security alerts** — Get notified of suspicious access patterns
+- 🗂️ **Version history** — Track changes and restore previous values
+- 🗑️ **Soft delete** — 30-day recovery window for deleted secrets
+
+---
+
+## Quick Start
+
+1. Go to [app.keyway.sh](https://app.keyway.sh)
+2. Sign in with GitHub
+3. Create your first vault from any repo you have access to
+
+> **Prefer the CLI?** Run `npx @keywaysh/cli init` in your project
+
+---
 
 ## Stack
 
-- Next.js 15 (App Router, TypeScript)
-- Tailwind CSS v4
-- shadcn/ui components
-- React Query for data fetching
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 15 (App Router) |
+| Styling | Tailwind CSS v4 |
+| Components | shadcn/ui |
+| Data | React Query |
+| Auth | GitHub OAuth |
 
-## Local Development
+---
+
+## Development
 
 ### Prerequisites
 
 - Node.js 20+
-- pnpm 9+
-- Running instance of [keyway-backend](https://github.com/keywaysh/keyway-backend)
+- [pnpm](https://pnpm.io/) 9+ (required — this project uses pnpm workspaces)
+- Running [keyway-backend](https://github.com/keywaysh/keyway-backend)
 
 ### Setup
 
@@ -28,50 +64,35 @@ pnpm install
 # Copy environment file
 cp .env.example .env.local
 
-# Start development server (port 3000)
+# Start dev server
 pnpm dev
 ```
 
-### Environment Variables
+### Commands
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_KEYWAY_API_URL` | Backend API URL | `http://localhost:3000` |
-| `NEXT_PUBLIC_POSTHOG_KEY` | PostHog analytics key | - |
-| `NEXT_PUBLIC_CRISP_WEBSITE_ID` | Crisp live chat ID | - |
-| `NEXT_PUBLIC_SENTRY_DSN` | Sentry error tracking | - |
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start dev server |
+| `pnpm build` | Production build |
+| `pnpm test` | Run tests |
+| `pnpm lint` | Lint code |
 
-### Running with Backend
+---
 
-```bash
-# Terminal 1: Backend (port 3000)
-cd ../keyway-backend && pnpm dev
+## Related
 
-# Terminal 2: Dashboard (port 3002 to avoid conflict)
-cd ../keyway-dashboard && pnpm dev --port 3002
-```
+- [keyway-backend](https://github.com/keywaysh/keyway-backend) — API server
+- [cli](https://github.com/keywaysh/cli) — Command-line tool
+- [keyway-docs](https://github.com/keywaysh/keyway-docs) — Documentation
+- [keyway-action](https://github.com/keywaysh/keyway-action) — GitHub Action
 
-Then update `.env.local`:
-```
-NEXT_PUBLIC_KEYWAY_API_URL=http://localhost:3000
-```
+---
 
-## Production Deployment
+## Security
 
-### Vercel
+Found a vulnerability? See [SECURITY.md](SECURITY.md) for reporting guidelines.
 
-1. Import repository in Vercel
-2. Set environment variables:
-   - `NEXT_PUBLIC_KEYWAY_API_URL=https://api.keyway.sh`
-3. Configure domain: `app.keyway.sh`
-
-## Testing
-
-```bash
-pnpm test          # Run tests
-pnpm test:watch    # Watch mode
-pnpm test:coverage # Coverage report
-```
+---
 
 ## License
 
