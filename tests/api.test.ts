@@ -187,6 +187,7 @@ describe('ApiClient', () => {
         avatar_url: 'https://example.com/avatar.png',
         github_username: 'testuser',
         plan: 'free',
+        created_at: '2024-01-01T00:00:00Z',
       });
     });
 
