@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ChevronDown, ChevronRight, Key, ExternalLink } from 'lucide-react'
 import type { ExposureUserReport, ExposureUserSummary } from '@/lib/types'
+import { formatRelativeTime } from '@/lib/date-utils'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -18,21 +19,6 @@ function getRoleBadgeProps(role: string): { variant: RoleBadgeVariant; className
     default:
       return { variant: 'secondary', className: 'text-xs' }
   }
-}
-
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 30) return `${diffDays}d ago`
-  return date.toLocaleDateString()
 }
 
 interface ExposureUserRowProps {

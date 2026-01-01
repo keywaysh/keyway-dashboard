@@ -89,33 +89,33 @@ export function TrashSection({
     <>
       <Card className="mt-6 border-dashed border-muted-foreground/30">
         <CardHeader className="py-3">
-          <button
-            onClick={handleToggleExpand}
-            className="flex items-center justify-between w-full text-left"
-          >
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              {isExpanded ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
-              )}
-              <Trash2 className="w-4 h-4" />
-              Recently deleted ({trashedSecrets.length})
-            </CardTitle>
+          <div className="flex items-center justify-between w-full">
+            <button
+              onClick={handleToggleExpand}
+              className="flex items-center gap-2 text-left"
+              aria-expanded={isExpanded}
+            >
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+                <Trash2 className="w-4 h-4" />
+                Recently deleted ({trashedSecrets.length})
+              </CardTitle>
+            </button>
             {isExpanded && canWrite && trashedSecrets.length > 1 && (
               <Button
                 variant="ghost"
                 size="sm"
                 className="text-xs text-destructive hover:text-destructive"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setConfirmEmptyTrash(true)
-                }}
+                onClick={() => setConfirmEmptyTrash(true)}
               >
                 Empty trash
               </Button>
             )}
-          </button>
+          </div>
         </CardHeader>
 
         {isExpanded && (

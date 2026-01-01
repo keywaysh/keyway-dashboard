@@ -33,6 +33,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { getEnvironmentColor } from '@/lib/environment-colors'
+import { formatLastSynced } from '@/lib/date-utils'
 
 // GitHub role config with Keyway-specific descriptions
 const permissionConfig: Record<VaultPermission, {
@@ -85,19 +86,6 @@ const providerConfig: Record<string, { label: string; icon: string; color: strin
   railway: { label: 'Railway', icon: '🚂', color: 'text-foreground', url: 'https://railway.app' },
   netlify: { label: 'Netlify', icon: '◆', color: 'text-teal-500', url: 'https://netlify.com' },
   fly: { label: 'Fly.io', icon: '✈', color: 'text-purple-500', url: 'https://fly.io' },
-}
-
-function formatLastSynced(dateString: string | null): string {
-  if (!dateString) return 'Never synced'
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-  if (diffInSeconds < 60) return 'Just now'
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`
-  return date.toLocaleDateString()
 }
 
 export default function VaultDetailPage() {
