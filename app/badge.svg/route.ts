@@ -21,7 +21,7 @@ const svgTemplate = () => `<?xml version="1.0" encoding="UTF-8"?>
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const repo = searchParams.get('repo') ?? 'keyway.sh';
+  const repo = searchParams.get('repo') || 'keyway.sh';
   const posthogKey = process.env.POSTHOG_SERVER_API_KEY;
   const posthogHost = (process.env.POSTHOG_HOST ?? 'https://app.posthog.com').replace(/\/$/, '');
 

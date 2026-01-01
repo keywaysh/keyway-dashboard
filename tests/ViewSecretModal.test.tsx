@@ -3,10 +3,21 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { ViewSecretModal } from '../app/components/dashboard/ViewSecretModal'
 import type { Secret } from '../lib/types'
 
+// Mock sonner
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}))
+
 // Mock the api module
 vi.mock('../lib/api', () => ({
   api: {
     getSecretValue: vi.fn(),
+    getSecretVersions: vi.fn(),
+    getSecretVersionValue: vi.fn(),
+    restoreSecretVersion: vi.fn(),
   },
 }))
 
@@ -16,6 +27,7 @@ vi.mock('../lib/analytics', () => ({
   AnalyticsEvents: {
     SECRET_VIEW: 'secret_view',
     SECRET_COPY: 'secret_copy',
+    SECRET_VERSION_RESTORED: 'secret_version_restored',
   },
 }))
 
@@ -370,6 +382,371 @@ describe('ViewSecretModal', () => {
       // but we verify the API was called
       await waitFor(() => {
         expect(api.getSecretValue).toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('version history', () => {
+    const mockVersions = [
+      {
+        id: 'version-1',
+        version_number: 1,
+        created_at: '2025-01-05T10:00:00Z',
+        created_by: {
+          username: 'testuser',
+          avatar_url: 'https://avatar.example.com/testuser.png',
+        },
+      },
+      {
+        id: 'version-2',
+        version_number: 2,
+        created_at: '2025-01-10T15:30:00Z',
+        created_by: {
+          username: 'anotheruser',
+          avatar_url: null,
+        },
+      },
+    ]
+
+    beforeEach(() => {
+      ;(api.getSecretVersions as ReturnType<typeof vi.fn>).mockResolvedValue(mockVersions)
+      ;(api.getSecretVersionValue as ReturnType<typeof vi.fn>).mockResolvedValue({
+        value: 'old-secret-value',
+      })
+      ;(api.restoreSecretVersion as ReturnType<typeof vi.fn>).mockResolvedValue({})
+    })
+
+    it('should render Version History button', () => {
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+        />
+      )
+
+      expect(screen.getByText('Version History')).toBeInTheDocument()
+    })
+
+    it('should fetch and display versions when toggle clicked', async () => {
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(api.getSecretVersions).toHaveBeenCalledWith('owner', 'repo', 'secret-1')
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Version 1')).toBeInTheDocument()
+        expect(screen.getByText('Version 2')).toBeInTheDocument()
+      })
+    })
+
+    it('should show No previous versions when empty', async () => {
+      ;(api.getSecretVersions as ReturnType<typeof vi.fn>).mockResolvedValue([])
+
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('No previous versions')).toBeInTheDocument()
+      })
+    })
+
+    it('should show creator usernames', async () => {
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('@testuser')).toBeInTheDocument()
+        expect(screen.getByText('@anotheruser')).toBeInTheDocument()
+      })
+    })
+
+    it('should load version value when version clicked', async () => {
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Version 1')).toBeInTheDocument()
+      })
+
+      const version1 = screen.getByText('Version 1')
+      fireEvent.click(version1)
+
+      await waitFor(() => {
+        expect(api.getSecretVersionValue).toHaveBeenCalledWith('owner', 'repo', 'secret-1', 'version-1')
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('old-secret-value')).toBeInTheDocument()
+      })
+    })
+
+    it('should show Restore button when canWrite is true', async () => {
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+          canWrite={true}
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Version 1')).toBeInTheDocument()
+      })
+
+      const version1 = screen.getByText('Version 1')
+      fireEvent.click(version1)
+
+      await waitFor(() => {
+        expect(screen.getByText('Restore this version')).toBeInTheDocument()
+      })
+    })
+
+    it('should not show Restore button when canWrite is false', async () => {
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+          canWrite={false}
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Version 1')).toBeInTheDocument()
+      })
+
+      const version1 = screen.getByText('Version 1')
+      fireEvent.click(version1)
+
+      await waitFor(() => {
+        expect(screen.getByText('old-secret-value')).toBeInTheDocument()
+      })
+
+      expect(screen.queryByText('Restore this version')).not.toBeInTheDocument()
+    })
+
+    it('should show restore confirmation dialog', async () => {
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+          canWrite={true}
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Version 1')).toBeInTheDocument()
+      })
+
+      const version1 = screen.getByText('Version 1')
+      fireEvent.click(version1)
+
+      await waitFor(() => {
+        expect(screen.getByText('Restore this version')).toBeInTheDocument()
+      })
+
+      const restoreButton = screen.getByText('Restore this version')
+      fireEvent.click(restoreButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Restore version?')).toBeInTheDocument()
+      })
+    })
+
+    it('should call restoreSecretVersion on confirm', async () => {
+      const mockOnSecretUpdated = vi.fn()
+
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+          canWrite={true}
+          onSecretUpdated={mockOnSecretUpdated}
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Version 1')).toBeInTheDocument()
+      })
+
+      const version1 = screen.getByText('Version 1')
+      fireEvent.click(version1)
+
+      await waitFor(() => {
+        expect(screen.getByText('Restore this version')).toBeInTheDocument()
+      })
+
+      const restoreButton = screen.getByText('Restore this version')
+      fireEvent.click(restoreButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Restore version?')).toBeInTheDocument()
+      })
+
+      const confirmButton = screen.getByRole('button', { name: /^Restore$/ })
+      fireEvent.click(confirmButton)
+
+      await waitFor(() => {
+        expect(api.restoreSecretVersion).toHaveBeenCalledWith('owner', 'repo', 'secret-1', 'version-1')
+      })
+
+      await waitFor(() => {
+        expect(mockOnSecretUpdated).toHaveBeenCalled()
+        expect(mockOnClose).toHaveBeenCalled()
+      })
+    })
+
+    it('should deselect version when clicking on it again', async () => {
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Version 1')).toBeInTheDocument()
+      })
+
+      const version1 = screen.getByText('Version 1')
+      fireEvent.click(version1)
+
+      await waitFor(() => {
+        expect(screen.getByText('old-secret-value')).toBeInTheDocument()
+      })
+
+      // Click again to deselect
+      fireEvent.click(version1)
+
+      await waitFor(() => {
+        expect(screen.queryByText('old-secret-value')).not.toBeInTheDocument()
+      })
+    })
+
+    it('should handle version fetch error', async () => {
+      ;(api.getSecretVersions as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error('Failed to load versions')
+      )
+
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(api.getSecretVersions).toHaveBeenCalled()
+      })
+    })
+
+    it('should handle version value fetch error', async () => {
+      ;(api.getSecretVersionValue as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error('Failed to load version value')
+      )
+
+      render(
+        <ViewSecretModal
+          isOpen={true}
+          onClose={mockOnClose}
+          secret={mockSecret}
+          owner="owner"
+          repo="repo"
+        />
+      )
+
+      const historyButton = screen.getByText('Version History')
+      fireEvent.click(historyButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Version 1')).toBeInTheDocument()
+      })
+
+      const version1 = screen.getByText('Version 1')
+      fireEvent.click(version1)
+
+      await waitFor(() => {
+        expect(api.getSecretVersionValue).toHaveBeenCalled()
       })
     })
   })
