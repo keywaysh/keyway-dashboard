@@ -1,5 +1,7 @@
 # Keyway Dashboard
 
+[![Keyway Secrets](https://www.keyway.sh/badge.svg?repo=keywaysh/keyway-dashboard)](https://www.keyway.sh/vaults/keywaysh/keyway-dashboard)
+
 Authenticated dashboard application for Keyway secrets management.
 
 ## Stack
