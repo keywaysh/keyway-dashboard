@@ -12,6 +12,7 @@ dist
 /.DS_Store
 .claude
 tsconfig.tsbuildinfo
+coverage/
 
 # Sentry Config File
 .env.sentry-build-plugin
