@@ -35,13 +35,12 @@ function getVaultWarning(vault: Vault): string | null {
     env.toLowerCase().includes('prod') || env.toLowerCase().includes('production')
   )
 
-  // If there are syncs configured but one is stale (not synced in 7 days)
+  // If there are syncs configured but one is stale (vault updated after last sync)
   if (vault.syncs && vault.syncs.length > 0) {
+    const vaultUpdatedAt = new Date(vault.updated_at)
     const staleSyncs = vault.syncs.filter(sync => {
       if (!sync.last_synced_at) return true
-      const lastSync = new Date(sync.last_synced_at)
-      const daysSinceSync = (Date.now() - lastSync.getTime()) / (1000 * 60 * 60 * 24)
-      return daysSinceSync > 7
+      return vaultUpdatedAt > new Date(sync.last_synced_at)
     })
     if (staleSyncs.length > 0) {
       return 'Sync stale'
@@ -81,15 +80,7 @@ export function VaultCard({ vault, onDelete }: VaultCardProps) {
         repoName: `${vault.repo_owner}/${vault.repo_name}`,
       })}
     >
-      <Card className="p-4 hover:ring-2 hover:ring-ring/20 transition-all relative">
-        {/* Warning indicator dot */}
-        {warning && (
-          <div
-            className="absolute top-3 right-3 size-2 rounded-full bg-amber-500"
-            title={warning}
-          />
-        )}
-
+      <Card className="p-4 hover:ring-2 hover:ring-ring/20 transition-all">
         {/* Header: Avatar + Name + Subtitle */}
         <div className="flex items-start gap-3">
           <Image

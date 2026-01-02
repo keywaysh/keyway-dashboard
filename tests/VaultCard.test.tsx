@@ -120,10 +120,12 @@ describe('VaultCard', () => {
       expect(screen.getByText('Active')).toBeInTheDocument()
     })
 
-    it('should show sync provider in subtitle when recently synced', () => {
-      const recentSyncDate = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day ago
+    it('should show sync provider in subtitle when vault is synced', () => {
+      const vaultUpdatedDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days ago
+      const recentSyncDate = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day ago (after update)
       const vaultWithSync = {
         ...mockVault,
+        updated_at: vaultUpdatedDate,
         syncs: [{ provider: 'vercel', project_name: 'my-project', last_synced_at: recentSyncDate }],
       }
       render(<VaultCard vault={vaultWithSync} />)
@@ -173,18 +175,32 @@ describe('VaultCard', () => {
     })
   })
 
-  describe('warning indicator', () => {
-    it('should show warning dot for stale syncs', () => {
-      const staleSyncDate = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+  describe('stale sync warning', () => {
+    it('should show stale text when vault updated after last sync', () => {
+      const lastSyncDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days ago
+      const vaultUpdatedDate = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day ago (after sync)
       const vaultWithStaleSync = {
         ...mockVault,
-        syncs: [{ provider: 'vercel', project_name: 'my-project', last_synced_at: staleSyncDate }],
+        updated_at: vaultUpdatedDate,
+        syncs: [{ provider: 'vercel', project_name: 'my-project', last_synced_at: lastSyncDate }],
       }
       render(<VaultCard vault={vaultWithStaleSync} />)
       expect(screen.getByText('Sync stale')).toBeInTheDocument()
     })
 
-    it('should show warning dot when sync has never synced', () => {
+    it('should not show stale warning when vault synced after last update', () => {
+      const vaultUpdatedDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days ago
+      const lastSyncDate = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day ago (after update)
+      const vaultWithFreshSync = {
+        ...mockVault,
+        updated_at: vaultUpdatedDate,
+        syncs: [{ provider: 'vercel', project_name: 'my-project', last_synced_at: lastSyncDate }],
+      }
+      render(<VaultCard vault={vaultWithFreshSync} />)
+      expect(screen.queryByText('Sync stale')).not.toBeInTheDocument()
+    })
+
+    it('should show stale text when sync has never synced', () => {
       const vaultWithNeverSynced = {
         ...mockVault,
         syncs: [{ provider: 'vercel', project_name: 'my-project', last_synced_at: null }],
