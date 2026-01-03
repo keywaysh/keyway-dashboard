@@ -52,7 +52,7 @@
 ### Prerequisites
 
 - Node.js 20+
-- [pnpm](https://pnpm.io/) 9+ (required — this project uses pnpm workspaces)
+- [pnpm](https://pnpm.io/) 9+
 - Running [keyway-backend](https://github.com/keywaysh/keyway-backend)
 
 ### Setup
