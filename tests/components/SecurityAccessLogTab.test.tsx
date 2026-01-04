@@ -103,6 +103,7 @@ const mockVaults: Vault[] = [
     environments: ['default'],
     collaborators_count: 2,
     is_read_only: false,
+    readonly_reason: null,
     syncs: [],
     created_at: '2025-01-01T00:00:00Z',
     updated_at: '2025-01-01T00:00:00Z',

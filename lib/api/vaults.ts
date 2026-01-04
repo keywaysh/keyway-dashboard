@@ -1,5 +1,5 @@
 import { BaseApiClient } from './client'
-import type { Vault } from '../types'
+import type { Vault, ReadonlyReason } from '../types'
 
 class VaultsApiClient extends BaseApiClient {
   async getVaults(): Promise<Vault[]> {
@@ -14,6 +14,7 @@ class VaultsApiClient extends BaseApiClient {
         permission: string
         isPrivate: boolean
         isReadOnly: boolean
+        readonlyReason: ReadonlyReason
         syncs: Array<{
           id: string
           provider: string
@@ -41,6 +42,7 @@ class VaultsApiClient extends BaseApiClient {
       permission: v.permission as Vault['permission'],
       is_private: v.isPrivate,
       is_read_only: v.isReadOnly,
+      readonly_reason: v.readonlyReason,
       syncs: (v.syncs || []).map(s => ({
         id: s.id,
         provider: s.provider,
@@ -69,6 +71,7 @@ class VaultsApiClient extends BaseApiClient {
         permission: string
         isPrivate: boolean
         isReadOnly: boolean
+        readonlyReason: ReadonlyReason
         syncs: Array<{
           id: string
           provider: string
@@ -95,6 +98,7 @@ class VaultsApiClient extends BaseApiClient {
       permission: data.permission as Vault['permission'],
       is_private: data.isPrivate,
       is_read_only: data.isReadOnly,
+      readonly_reason: data.readonlyReason,
       syncs: (data.syncs || []).map(s => ({
         id: s.id,
         provider: s.provider,

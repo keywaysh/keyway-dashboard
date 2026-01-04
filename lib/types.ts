@@ -1,4 +1,6 @@
-export type UserPlan = 'free' | 'pro' | 'team'
+export type UserPlan = 'free' | 'pro' | 'team' | 'startup'
+
+export type ReadonlyReason = 'plan_limit_exceeded' | 'org_free_plan' | null
 
 export interface User {
   id: string
@@ -50,6 +52,7 @@ export interface Vault {
   permission: VaultPermission
   is_private: boolean
   is_read_only: boolean
+  readonly_reason: ReadonlyReason
   syncs: VaultSync[]
   updated_at: string
   created_at: string

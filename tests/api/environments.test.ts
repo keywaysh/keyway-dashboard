@@ -15,7 +15,13 @@ describe('environmentsApi', () => {
         ok: true,
         status: 200,
         json: () => Promise.resolve({
-          data: { environments: ['default', 'staging', 'production'] },
+          data: {
+            environments: [
+              { name: 'default', type: 'standard', displayOrder: 0 },
+              { name: 'staging', type: 'standard', displayOrder: 1 },
+              { name: 'production', type: 'protected', displayOrder: 2 },
+            ],
+          },
           meta: { requestId: 'req-1' },
         }),
       })
@@ -36,7 +42,15 @@ describe('environmentsApi', () => {
         ok: true,
         status: 201,
         json: () => Promise.resolve({
-          data: { environment: 'testing', environments: ['default', 'staging', 'production', 'testing'] },
+          data: {
+            environment: { name: 'testing', type: 'standard', displayOrder: 3 },
+            environments: [
+              { name: 'default', type: 'standard', displayOrder: 0 },
+              { name: 'staging', type: 'standard', displayOrder: 1 },
+              { name: 'production', type: 'protected', displayOrder: 2 },
+              { name: 'testing', type: 'standard', displayOrder: 3 },
+            ],
+          },
           meta: { requestId: 'req-1' },
         }),
       })
@@ -61,7 +75,16 @@ describe('environmentsApi', () => {
         ok: true,
         status: 200,
         json: () => Promise.resolve({
-          data: { oldName: 'testing', newName: 'test-renamed', environments: ['default', 'staging', 'production', 'test-renamed'] },
+          data: {
+            oldName: 'testing',
+            newName: 'test-renamed',
+            environments: [
+              { name: 'default', type: 'standard', displayOrder: 0 },
+              { name: 'staging', type: 'standard', displayOrder: 1 },
+              { name: 'production', type: 'protected', displayOrder: 2 },
+              { name: 'test-renamed', type: 'standard', displayOrder: 3 },
+            ],
+          },
           meta: { requestId: 'req-1' },
         }),
       })
@@ -85,7 +108,14 @@ describe('environmentsApi', () => {
         ok: true,
         status: 200,
         json: () => Promise.resolve({
-          data: { deleted: 'testing', environments: ['default', 'staging', 'production'] },
+          data: {
+            deleted: 'testing',
+            environments: [
+              { name: 'default', type: 'standard', displayOrder: 0 },
+              { name: 'staging', type: 'standard', displayOrder: 1 },
+              { name: 'production', type: 'protected', displayOrder: 2 },
+            ],
+          },
           meta: { requestId: 'req-1' },
         }),
       })

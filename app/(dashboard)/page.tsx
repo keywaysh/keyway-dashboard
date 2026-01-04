@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useRef, useMemo } from 'react'
 import Image from 'next/image'
-import { User, Building2 } from 'lucide-react'
+import Link from 'next/link'
+import { User, Building2, AlertTriangle } from 'lucide-react'
 import { api } from '@/lib/api'
-import type { Vault } from '@/lib/types'
+import type { Vault, UserPlan } from '@/lib/types'
 import {
   DashboardLayout,
   VaultCard,
@@ -23,6 +24,14 @@ interface VaultGroup {
   avatar: string
   vaults: Vault[]
   isPersonal: boolean
+}
+
+// Plan limits for display
+const PLAN_LIMITS: Record<UserPlan, number> = {
+  free: 1,
+  pro: 5,
+  team: 10,
+  startup: 40,
 }
 
 function groupVaultsByOwner(vaults: Vault[], currentUsername?: string): VaultGroup[] {
@@ -62,6 +71,11 @@ export default function DashboardPage() {
     () => groupVaultsByOwner(vaults, user?.github_username),
     [vaults, user?.github_username]
   )
+
+  // Count vaults that are read-only due to plan limit exceeded
+  const readonlyDueToPlanLimit = useMemo(() => {
+    return vaults.filter(v => v.is_read_only && v.readonly_reason === 'plan_limit_exceeded').length
+  }, [vaults])
 
   useEffect(() => {
     if (!hasFiredView.current) {
@@ -153,6 +167,27 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-8">
+            {/* Plan limit exceeded banner */}
+            {readonlyDueToPlanLimit > 0 && user && (
+              <div className="p-4 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-400">
+                      {readonlyDueToPlanLimit} vault{readonlyDueToPlanLimit > 1 ? 's are' : ' is'} read-only
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-500 mt-1">
+                      Your {user.plan} plan allows {PLAN_LIMITS[user.plan]} private vault{PLAN_LIMITS[user.plan] === 1 ? '' : 's'}.
+                      Your oldest vaults remain writable, newer ones are read-only.{' '}
+                      <Link href="/upgrade" className="underline hover:no-underline">
+                        Upgrade your plan
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {vaultGroups.map((group) => (
               <section key={group.owner}>
                 <div className="flex items-center gap-2 mb-4">

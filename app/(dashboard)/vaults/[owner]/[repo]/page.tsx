@@ -7,7 +7,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronLeft, Plus, Upload, Search, X, Settings, Users, RefreshCw, ExternalLink, AlertTriangle, Copy } from 'lucide-react'
 import { api } from '@/lib/api'
-import type { Vault, Secret, TrashedSecret, VaultPermission } from '@/lib/types'
+import { useAuth } from '@/lib/auth'
+import type { Vault, Secret, TrashedSecret, VaultPermission, ReadonlyReason, UserPlan } from '@/lib/types'
 import {
   DashboardLayout,
   SecretRow,
@@ -88,11 +89,49 @@ const providerConfig: Record<string, { label: string; icon: string; color: strin
   fly: { label: 'Fly.io', icon: '✈', color: 'text-purple-500', url: 'https://fly.io' },
 }
 
+// Plan limits for contextual messages
+const PLAN_LIMITS: Record<UserPlan, number> = {
+  free: 1,
+  pro: 5,
+  team: 10,
+  startup: 40,
+}
+
+// Get contextual read-only message based on reason and plan
+function getReadonlyInfo(reason: ReadonlyReason, plan: UserPlan, repoOwner: string): {
+  message: string
+  linkText: string
+  linkHref: string
+} {
+  if (reason === 'plan_limit_exceeded') {
+    const limit = PLAN_LIMITS[plan]
+    const nextPlan = plan === 'free' ? 'Pro' : plan === 'pro' ? 'Team' : plan === 'team' ? 'Startup' : null
+    return {
+      message: `You've exceeded your ${plan} plan limit of ${limit} private vault${limit === 1 ? '' : 's'}. Your oldest vaults remain writable.`,
+      linkText: nextPlan ? `Upgrade to ${nextPlan}` : 'Manage subscription',
+      linkHref: '/upgrade',
+    }
+  }
+  if (reason === 'org_free_plan') {
+    return {
+      message: `This organization is on the Free plan. Upgrade the organization to unlock editing.`,
+      linkText: 'Upgrade organization',
+      linkHref: `/orgs/${repoOwner}/billing`,
+    }
+  }
+  return {
+    message: 'This vault is read-only.',
+    linkText: 'Learn more',
+    linkHref: '/upgrade',
+  }
+}
+
 export default function VaultDetailPage() {
   const params = useParams()
   const owner = params.owner as string
   const repo = params.repo as string
   const queryClient = useQueryClient()
+  const { user } = useAuth()
 
   // UI state (not data)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -528,19 +567,26 @@ export default function VaultDetailPage() {
                 )}
               </div>
 
-              {/* Read-only banner for downgraded users */}
-              {vault.is_read_only && (
-                <div className="mt-4 p-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-amber-800 dark:text-amber-400">
-                      Read-only vault
-                    </span>
+              {/* Read-only banner for users who exceeded plan limits */}
+              {vault.is_read_only && (() => {
+                const readonlyInfo = getReadonlyInfo(vault.readonly_reason, user?.plan || 'free', vault.repo_owner)
+                return (
+                  <div className="mt-4 p-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <span className="text-sm font-medium text-amber-800 dark:text-amber-400">
+                        Read-only vault
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-700 dark:text-amber-500 mt-1">
+                      {readonlyInfo.message}{' '}
+                      <Link href={readonlyInfo.linkHref} className="underline hover:no-underline">
+                        {readonlyInfo.linkText}
+                      </Link>
+                    </p>
                   </div>
-                  <p className="text-xs text-amber-700 dark:text-amber-500 mt-1">
-                    This vault is read-only on the Free plan. <Link href="/settings" className="underline hover:no-underline">Upgrade to Pro</Link> to edit secrets.
-                  </p>
-                </div>
-              )}
+                )
+              })()}
 
               {/* Permission badge */}
               <div className={`mt-4 p-3 rounded-lg border border-border ${permissionConfig[vault.permission].bgColor}`}>

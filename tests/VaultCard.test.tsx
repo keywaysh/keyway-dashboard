@@ -21,6 +21,7 @@ const mockVault: Vault = {
   permission: 'admin',
   is_private: false,
   is_read_only: false,
+  readonly_reason: null,
   syncs: [],
   updated_at: new Date().toISOString(),
   created_at: new Date().toISOString(),
@@ -67,13 +68,25 @@ describe('VaultCard', () => {
   describe('read-only warning', () => {
     it('should not show read-only warning by default', () => {
       render(<VaultCard vault={mockVault} />)
-      expect(screen.queryByText('Read-only vault')).not.toBeInTheDocument()
+      expect(screen.queryByText(/Read-only/)).not.toBeInTheDocument()
     })
 
     it('should show read-only warning when is_read_only is true', () => {
-      const readOnlyVault = { ...mockVault, is_read_only: true }
+      const readOnlyVault = { ...mockVault, is_read_only: true, readonly_reason: null }
       render(<VaultCard vault={readOnlyVault} />)
-      expect(screen.getByText('Read-only vault')).toBeInTheDocument()
+      expect(screen.getByText('Read-only')).toBeInTheDocument()
+    })
+
+    it('should show plan limit warning when readonly reason is plan_limit_exceeded', () => {
+      const readOnlyVault = { ...mockVault, is_read_only: true, readonly_reason: 'plan_limit_exceeded' as const }
+      render(<VaultCard vault={readOnlyVault} />)
+      expect(screen.getByText('Read-only · Plan limit')).toBeInTheDocument()
+    })
+
+    it('should show org warning when readonly reason is org_free_plan', () => {
+      const readOnlyVault = { ...mockVault, is_read_only: true, readonly_reason: 'org_free_plan' as const }
+      render(<VaultCard vault={readOnlyVault} />)
+      expect(screen.getByText('Read-only · Org on Free')).toBeInTheDocument()
     })
   })
 

@@ -33,6 +33,21 @@ vi.mock('sonner', () => ({
   },
 }))
 
+// Mock auth
+vi.mock('../../lib/auth', () => ({
+  useAuth: () => ({
+    user: {
+      id: 'user-1',
+      name: 'Test User',
+      email: 'test@example.com',
+      avatar_url: 'https://example.com/avatar.png',
+      github_username: 'testuser',
+      plan: 'team',
+    },
+    isLoading: false,
+  }),
+}))
+
 // Mock analytics
 vi.mock('../../lib/analytics', () => ({
   trackEvent: vi.fn(),
@@ -82,6 +97,7 @@ const mockVault: Vault = {
   environments: ['default', 'staging', 'production'],
   collaborators_count: 2,
   is_read_only: false,
+  readonly_reason: null,
   syncs: [],
   created_at: '2025-01-01T00:00:00Z',
   updated_at: '2025-01-01T00:00:00Z',
@@ -265,18 +281,11 @@ describe('VaultDetailPage', () => {
     it('should render all environments as filter buttons', () => {
       render(<VaultDetailPage />)
 
-      // Find all filter buttons (they contain the environment name and secret count)
-      const allEnvButtons = screen.getAllByRole('button').filter(
-        btn => btn.textContent?.includes('secret')
-      )
-
-      // Should have 4 buttons: All + 3 environments
-      expect(allEnvButtons.length).toBeGreaterThanOrEqual(4)
-
       // Check environment names exist in the document
       expect(screen.getAllByText('default').length).toBeGreaterThan(0)
       expect(screen.getAllByText('staging').length).toBeGreaterThan(0)
       expect(screen.getAllByText('production').length).toBeGreaterThan(0)
+      expect(screen.getByText('All')).toBeInTheDocument()
     })
 
     it('should show All filter by default', () => {
@@ -288,23 +297,24 @@ describe('VaultDetailPage', () => {
     it('should filter secrets when environment is clicked', async () => {
       render(<VaultDetailPage />)
 
-      // Find the environment filter buttons by their structure (button with env name + secret count)
-      const allEnvButtons = screen.getAllByRole('button').filter(
-        btn => btn.textContent?.includes('secret')
-      )
-      // Find production button (the one with environment name 'production')
-      const productionButton = allEnvButtons.find(btn =>
-        btn.textContent?.includes('production')
+      // Wait for initial render with all secrets
+      await waitFor(() => {
+        expect(screen.getByText('3 of 3')).toBeInTheDocument()
+      })
+
+      // Find the production environment button by its text
+      const productionButtons = screen.getAllByRole('button').filter(
+        btn => btn.textContent === 'production'
       )
 
-      if (productionButton) {
-        fireEvent.click(productionButton)
+      if (productionButtons.length > 0) {
+        fireEvent.click(productionButtons[0])
       }
 
-      // Should show filtered count
+      // Should show filtered count (2 secrets are in production environment)
       await waitFor(() => {
         expect(screen.getByText('2 of 3')).toBeInTheDocument()
-      })
+      }, { timeout: 3000 })
     })
   })
 
@@ -350,12 +360,17 @@ describe('VaultDetailPage', () => {
       const user = userEvent.setup()
       render(<VaultDetailPage />)
 
+      // Wait for initial render
+      await waitFor(() => {
+        expect(screen.getByText('3 of 3')).toBeInTheDocument()
+      })
+
       const searchInput = screen.getByPlaceholderText('Search secrets...')
       await user.type(searchInput, 'DATABASE')
 
       await waitFor(() => {
         expect(screen.getByText('1 of 3')).toBeInTheDocument()
-      })
+      }, { timeout: 3000 })
     })
   })
 

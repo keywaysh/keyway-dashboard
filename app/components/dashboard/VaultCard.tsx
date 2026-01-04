@@ -30,11 +30,6 @@ interface VaultCardProps {
 
 // Check if vault has any warnings (e.g., missing production secrets)
 function getVaultWarning(vault: Vault): string | null {
-  // Check if vault has production environment but no secrets in it
-  const hasProdEnv = vault.environments.some(env =>
-    env.toLowerCase().includes('prod') || env.toLowerCase().includes('production')
-  )
-
   // If there are syncs configured but one is stale (vault updated after last sync)
   if (vault.syncs && vault.syncs.length > 0) {
     const vaultUpdatedAt = new Date(vault.updated_at)
@@ -47,9 +42,15 @@ function getVaultWarning(vault: Vault): string | null {
     }
   }
 
-  // Placeholder for future warnings - could check API for coverage data
+  // Show contextual read-only warning
   if (vault.is_read_only) {
-    return 'Read-only vault'
+    if (vault.readonly_reason === 'plan_limit_exceeded') {
+      return 'Read-only · Plan limit'
+    }
+    if (vault.readonly_reason === 'org_free_plan') {
+      return 'Read-only · Org on Free'
+    }
+    return 'Read-only'
   }
 
   return null
