@@ -4,11 +4,10 @@ import { useEffect, useState, useRef, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
-import Image from 'next/image'
-import { ChevronLeft, Plus, Upload, Search, X, Settings, Users, RefreshCw, ExternalLink, AlertTriangle, Copy } from 'lucide-react'
+import { ChevronLeft, Upload, Search, X, Settings, Users, RefreshCw, AlertTriangle, Copy } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
-import type { Vault, Secret, TrashedSecret, VaultPermission, ReadonlyReason, UserPlan } from '@/lib/types'
+import type { Vault, Secret, TrashedSecret, VaultPermission, UserPlan } from '@/lib/types'
 import {
   DashboardLayout,
   SecretRow,
@@ -20,11 +19,11 @@ import {
   EmptyState,
   TrashSection,
   SyncButton,
+  VaultDetailHeader,
 } from '@/app/components/dashboard'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -87,43 +86,6 @@ const providerConfig: Record<string, { label: string; icon: string; color: strin
   railway: { label: 'Railway', icon: '🚂', color: 'text-foreground', url: 'https://railway.app' },
   netlify: { label: 'Netlify', icon: '◆', color: 'text-teal-500', url: 'https://netlify.com' },
   fly: { label: 'Fly.io', icon: '✈', color: 'text-purple-500', url: 'https://fly.io' },
-}
-
-// Plan limits for contextual messages
-const PLAN_LIMITS: Record<UserPlan, number> = {
-  free: 1,
-  pro: 5,
-  team: 10,
-  startup: 40,
-}
-
-// Get contextual read-only message based on reason and plan
-function getReadonlyInfo(reason: ReadonlyReason, plan: UserPlan, repoOwner: string): {
-  message: string
-  linkText: string
-  linkHref: string
-} {
-  if (reason === 'plan_limit_exceeded') {
-    const limit = PLAN_LIMITS[plan]
-    const nextPlan = plan === 'free' ? 'Pro' : plan === 'pro' ? 'Team' : plan === 'team' ? 'Startup' : null
-    return {
-      message: `You've exceeded your ${plan} plan limit of ${limit} private vault${limit === 1 ? '' : 's'}. Your oldest vaults remain writable.`,
-      linkText: nextPlan ? `Upgrade to ${nextPlan}` : 'Manage subscription',
-      linkHref: '/upgrade',
-    }
-  }
-  if (reason === 'org_free_plan') {
-    return {
-      message: `This organization is on the Free plan. Upgrade the organization to unlock editing.`,
-      linkText: 'Upgrade organization',
-      linkHref: `/orgs/${repoOwner}/billing`,
-    }
-  }
-  return {
-    message: 'This vault is read-only.',
-    linkText: 'Learn more',
-    linkHref: '/upgrade',
-  }
 }
 
 export default function VaultDetailPage() {
@@ -520,149 +482,90 @@ export default function VaultDetailPage() {
         </div>
 
         <div className="mb-6">
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          ) : vault ? (
-            <>
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <Image
-                    src={vault.repo_avatar}
-                    alt={vault.repo_owner}
-                    width={48}
-                    height={48}
-                    className="rounded-lg border border-border shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground truncate">
-                      {vault.repo_owner}/{vault.repo_name}
-                    </h2>
-                    <p className="text-muted-foreground text-sm">
-                      {vault.secrets_count} secrets · {vault.environments.length} environments
-                    </p>
+          <VaultDetailHeader
+            vault={vault}
+            isLoading={isLoading}
+            canWrite={!!canWrite}
+            userPlan={user?.plan || 'free'}
+            onAddSecret={handleCreateSecret}
+            onBulkImport={handleBulkImport}
+          />
+
+          {/* Permission badge */}
+          {vault && (
+            <div className={`mt-4 p-3 rounded-lg border border-border ${permissionConfig[vault.permission].bgColor}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-medium ${permissionConfig[vault.permission].color}`}>
+                      {permissionConfig[vault.permission].label}
+                    </span>
+                    <span className="text-xs text-muted-foreground">on GitHub</span>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {permissionConfig[vault.permission].description}
+                  </p>
                 </div>
-                {canWrite && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button className="shrink-0 self-start">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Secrets
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={handleCreateSecret}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add single secret
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleBulkImport}>
-                        <Upload className="w-4 h-4 mr-2" />
-                        Import from .env
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                {vault.permission === 'admin' && (
+                  <Button variant="ghost" size="sm" asChild className="shrink-0">
+                    <Link href={`/vaults/${owner}/${repo}/collaborators`}>
+                      <Users className="w-4 h-4 mr-1.5" />
+                      Collaborators
+                    </Link>
+                  </Button>
                 )}
               </div>
+            </div>
+          )}
 
-              {/* Read-only banner for users who exceeded plan limits */}
-              {vault.is_read_only && (() => {
-                const readonlyInfo = getReadonlyInfo(vault.readonly_reason, user?.plan || 'free', vault.repo_owner)
-                return (
-                  <div className="mt-4 p-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                      <span className="text-sm font-medium text-amber-800 dark:text-amber-400">
-                        Read-only vault
-                      </span>
-                    </div>
-                    <p className="text-xs text-amber-700 dark:text-amber-500 mt-1">
-                      {readonlyInfo.message}{' '}
-                      <Link href={readonlyInfo.linkHref} className="underline hover:no-underline">
-                        {readonlyInfo.linkText}
-                      </Link>
-                    </p>
-                  </div>
-                )
-              })()}
-
-              {/* Permission badge */}
-              <div className={`mt-4 p-3 rounded-lg border border-border ${permissionConfig[vault.permission].bgColor}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium ${permissionConfig[vault.permission].color}`}>
-                        {permissionConfig[vault.permission].label}
-                      </span>
-                      <span className="text-xs text-muted-foreground">on GitHub</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {permissionConfig[vault.permission].description}
-                    </p>
-                  </div>
-                  {vault.permission === 'admin' && (
-                    <Button variant="ghost" size="sm" asChild className="shrink-0">
-                      <Link href={`/vaults/${owner}/${repo}/collaborators`}>
-                        <Users className="w-4 h-4 mr-1.5" />
-                        Collaborators
-                      </Link>
-                    </Button>
-                  )}
-                </div>
+          {/* Integrations section */}
+          {vault && vault.syncs && vault.syncs.length > 0 && (
+            <div className="mt-4 p-3 rounded-lg border border-border bg-card">
+              <div className="flex items-center gap-2 mb-3">
+                <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Synced Providers</span>
               </div>
-
-              {/* Integrations section */}
-              {vault.syncs && vault.syncs.length > 0 && (
-                <div className="mt-4 p-3 rounded-lg border border-border bg-card">
-                  <div className="flex items-center gap-2 mb-3">
-                    <RefreshCw className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Synced Providers</span>
-                  </div>
-                  <div className="space-y-2">
-                    {vault.syncs.map((sync) => {
-                      const config = providerConfig[sync.provider] || {
-                        label: sync.provider,
-                        icon: '⚡',
-                        color: 'text-muted-foreground',
-                      }
-                      return (
-                        <div
-                          key={sync.id}
-                          className="flex items-center justify-between p-2 rounded-md bg-muted/30"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className={`text-base ${config.color}`}>{config.icon}</span>
-                            <div>
-                              <span className="text-sm font-medium">{config.label}</span>
-                              {sync.project_name && (
-                                <span className="text-xs text-muted-foreground ml-2">
-                                  {sync.project_name}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">
-                              {formatLastSynced(sync.last_synced_at)}
+              <div className="space-y-2">
+                {vault.syncs.map((sync) => {
+                  const config = providerConfig[sync.provider] || {
+                    label: sync.provider,
+                    icon: '⚡',
+                    color: 'text-muted-foreground',
+                  }
+                  return (
+                    <div
+                      key={sync.id}
+                      className="flex items-center justify-between p-2 rounded-md bg-muted/30"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`text-base ${config.color}`}>{config.icon}</span>
+                        <div>
+                          <span className="text-sm font-medium">{config.label}</span>
+                          {sync.project_name && (
+                            <span className="text-xs text-muted-foreground ml-2">
+                              {sync.project_name}
                             </span>
-                            <SyncButton
-                              sync={sync}
-                              owner={owner}
-                              repo={repo}
-                              providerLabel={config.label}
-                              onSyncComplete={refetchAll}
-                            />
-                          </div>
+                          )}
                         </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-            </>
-          ) : null}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {formatLastSynced(sync.last_synced_at)}
+                        </span>
+                        <SyncButton
+                          sync={sync}
+                          owner={owner}
+                          repo={repo}
+                          providerLabel={config.label}
+                          onSyncComplete={refetchAll}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {error ? (

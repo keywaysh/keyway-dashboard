@@ -187,6 +187,35 @@ vi.mock('../../lib/api', () => ({
 // Mock dashboard components
 vi.mock('../../app/components/dashboard', () => ({
   DashboardLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="dashboard-layout">{children}</div>,
+  VaultDetailHeader: ({ vault, isLoading, canWrite, onAddSecret, onBulkImport }: {
+    vault: Vault | undefined
+    isLoading: boolean
+    canWrite: boolean
+    userPlan: string
+    onAddSecret: () => void
+    onBulkImport: () => void
+  }) => {
+    if (isLoading) {
+      return <div data-testid="vault-header-skeleton" />
+    }
+    if (!vault) {
+      return null
+    }
+    return (
+      <div data-testid="vault-header">
+        <img src={vault.repo_avatar} alt={vault.repo_owner} />
+        <span>{vault.repo_owner}/{vault.repo_name}</span>
+        <span>{vault.secrets_count} secrets · {vault.environments.length} environments</span>
+        {canWrite && (
+          <div>
+            <button>Add Secrets</button>
+            <button onClick={onAddSecret}>Add single secret</button>
+            <button onClick={onBulkImport}>Import from .env</button>
+          </div>
+        )}
+      </div>
+    )
+  },
   SecretRow: ({ secret, onView, onEdit, onDelete }: { secret: Secret; onView?: (s: Secret) => void; onEdit?: (s: Secret) => void; onDelete?: (s: Secret) => void }) => (
     <div data-testid={`secret-row-${secret.id}`}>
       <span>{secret.name}</span>
