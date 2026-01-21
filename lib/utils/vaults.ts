@@ -14,17 +14,19 @@ export interface VaultGroup {
  */
 export function groupVaultsByOwner(vaults: Vault[], currentUsername?: string): VaultGroup[] {
   const groups = new Map<string, VaultGroup>()
+  const currentKey = currentUsername?.toLowerCase()
 
   for (const vault of vaults) {
-    const existing = groups.get(vault.repo_owner)
+    const ownerKey = vault.repo_owner.toLowerCase()
+    const existing = groups.get(ownerKey)
     if (existing) {
       existing.vaults.push(vault)
     } else {
-      groups.set(vault.repo_owner, {
+      groups.set(ownerKey, {
         owner: vault.repo_owner,
         avatar: vault.repo_avatar,
         vaults: [vault],
-        isPersonal: vault.repo_owner === currentUsername,
+        isPersonal: ownerKey === currentKey,
       })
     }
   }
