@@ -18,13 +18,7 @@ import {
 import { CLICommand } from '@/app/components/cli-command'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
 import { useAuth } from '@/lib/auth'
-
-interface VaultGroup {
-  owner: string
-  avatar: string
-  vaults: Vault[]
-  isPersonal: boolean
-}
+import { groupVaultsByOwner } from '@/lib/utils/vaults'
 
 // Plan limits for display
 const PLAN_LIMITS: Record<UserPlan, number> = {
@@ -32,31 +26,6 @@ const PLAN_LIMITS: Record<UserPlan, number> = {
   pro: 5,
   team: 10,
   startup: 40,
-}
-
-function groupVaultsByOwner(vaults: Vault[], currentUsername?: string): VaultGroup[] {
-  const groups = new Map<string, VaultGroup>()
-
-  for (const vault of vaults) {
-    const existing = groups.get(vault.repo_owner)
-    if (existing) {
-      existing.vaults.push(vault)
-    } else {
-      groups.set(vault.repo_owner, {
-        owner: vault.repo_owner,
-        avatar: vault.repo_avatar,
-        vaults: [vault],
-        isPersonal: vault.repo_owner === currentUsername,
-      })
-    }
-  }
-
-  // Sort: personal vaults first, then alphabetically by owner name
-  return Array.from(groups.values()).sort((a, b) => {
-    if (a.isPersonal && !b.isPersonal) return -1
-    if (!a.isPersonal && b.isPersonal) return 1
-    return a.owner.toLowerCase().localeCompare(b.owner.toLowerCase())
-  })
 }
 
 export default function DashboardPage() {

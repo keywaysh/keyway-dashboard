@@ -19,6 +19,12 @@ pnpm lint             # ESLint
 pnpm test             # Run tests
 ```
 
+## Workflow
+
+- **Do NOT run `pnpm build` after every change** - it's slow and unnecessary during development
+- Use `pnpm dev` to test changes in the browser
+- Only run `pnpm build` when explicitly requested or before committing
+
 ## Architecture
 
 ### Directory Structure

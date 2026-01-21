@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Menu, Plus, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NewVaultModal } from './NewVaultModal'
+import { GlobalSearch } from './GlobalSearch'
 import { openFeedback } from '@/lib/crisp'
 
 interface TopbarProps {
@@ -29,6 +30,10 @@ export function Topbar({ onMenuClick, title = 'Vaults', showNewVault = true }: T
             <span className="sr-only">Open menu</span>
           </Button>
           <h1 className="text-sm font-semibold text-foreground">{title}</h1>
+        </div>
+
+        <div className="hidden flex-1 justify-center md:flex max-w-md mx-4">
+          <GlobalSearch className="w-full" />
         </div>
 
         <div className="flex items-center gap-2">
