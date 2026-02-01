@@ -8,6 +8,8 @@ import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
 
+const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@keyway.sh'
+
 type BillingInterval = 'monthly' | 'yearly'
 
 type PriceData = {
@@ -391,7 +393,7 @@ export default function UpgradePage() {
                     </button>
                   ) : (
                     <a
-                      href="mailto:hello@keyway.sh?subject=Upgrade to Pro"
+                      href={`mailto:${contactEmail}?subject=Upgrade to Pro`}
                       className="block w-full py-2 px-4 rounded-lg text-center text-sm font-medium transition-colors bg-primary hover:bg-primary/90 text-white"
                     >
                       Contact us to upgrade
@@ -453,7 +455,7 @@ export default function UpgradePage() {
                     </button>
                   ) : (
                     <a
-                      href="mailto:hello@keyway.sh?subject=Upgrade to Team"
+                      href={`mailto:${contactEmail}?subject=Upgrade to Team`}
                       className="block w-full py-2 px-4 rounded-lg text-center text-sm font-medium transition-colors bg-purple-600 hover:bg-purple-700 text-white"
                     >
                       Contact us to upgrade
@@ -515,7 +517,7 @@ export default function UpgradePage() {
                     </button>
                   ) : (
                     <a
-                      href="mailto:hello@keyway.sh?subject=Upgrade to Startup"
+                      href={`mailto:${contactEmail}?subject=Upgrade to Startup`}
                       className="block w-full py-2 px-4 rounded-lg text-center text-sm font-medium transition-colors bg-amber-600 hover:bg-amber-700 text-white"
                     >
                       Contact us to upgrade
@@ -534,7 +536,7 @@ export default function UpgradePage() {
                 </p>
                 <p className="text-gray-500 text-sm">
                   Cancel anytime. Questions?{' '}
-                  <a href="mailto:hello@keyway.sh" className="text-primary hover:underline">
+                  <a href={`mailto:${contactEmail}`} className="text-primary hover:underline">
                     Contact us
                   </a>
                 </p>
@@ -549,7 +551,7 @@ export default function UpgradePage() {
         <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
           <p>
             Questions?{' '}
-            <a href="mailto:hello@keyway.sh" className="text-primary hover:underline">
+            <a href={`mailto:${contactEmail}`} className="text-primary hover:underline">
               Contact us
             </a>
           </p>

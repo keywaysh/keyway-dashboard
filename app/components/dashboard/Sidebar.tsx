@@ -250,7 +250,7 @@ function SidebarContent({ onClose, isCollapsed, onToggleCollapsed }: SidebarCont
         {/* Docs & Settings Links */}
         <div className="p-3 pb-0 space-y-1">
           <Link
-            href="https://docs.keyway.sh"
+            href={process.env.NEXT_PUBLIC_DOCS_URL || 'https://docs.keyway.sh'}
             target="_blank"
             rel="noopener noreferrer"
             title={isCollapsed ? "Documentation" : undefined}

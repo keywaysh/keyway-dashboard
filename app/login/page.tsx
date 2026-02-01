@@ -6,8 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth, AuthProvider } from '@/lib/auth'
 import { KeywayLogo } from '@/app/components/logo'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
-
-const API_BASE = process.env.NEXT_PUBLIC_KEYWAY_API_URL || 'https://api.keyway.sh'
+import { API_BASE } from '@/lib/env'
 
 function LoginContentInner() {
   const { user, isLoading } = useAuth()
@@ -73,7 +72,7 @@ function LoginContentInner() {
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               By signing in, you agree to our{' '}
-              <a href="https://keyway.sh/terms" className="text-primary hover:underline">
+              <a href={`${process.env.NEXT_PUBLIC_LANDING_URL || 'https://keyway.sh'}/terms`} className="text-primary hover:underline">
                 Terms of Service
               </a>
             </p>
@@ -82,7 +81,7 @@ function LoginContentInner() {
 
         <p className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
           New to Keyway?{' '}
-          <a href="https://keyway.sh" className="text-primary hover:underline">
+          <a href={process.env.NEXT_PUBLIC_LANDING_URL || 'https://keyway.sh'} className="text-primary hover:underline">
             Learn more
           </a>
         </p>

@@ -190,7 +190,7 @@ export default function OrganizationsPage() {
             </p>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link href="https://www.keyway.sh/#pricing" target="_blank">
+            <Link href={`${process.env.NEXT_PUBLIC_LANDING_URL || 'https://www.keyway.sh'}/#pricing`} target="_blank">
               Learn More
             </Link>
           </Button>

@@ -33,6 +33,15 @@ const clientEnvSchema = z.object({
 
   // Crisp chat widget (optional)
   NEXT_PUBLIC_CRISP_WEBSITE_ID: z.string().optional(),
+
+  // Self-hosting configuration
+  NEXT_PUBLIC_DASHBOARD_URL: z.string().url().optional(),
+  NEXT_PUBLIC_LANDING_URL: z.string().url().optional(),
+  NEXT_PUBLIC_DOCS_URL: z.string().url().optional(),
+  NEXT_PUBLIC_CONTACT_EMAIL: z.string().email().optional(),
+  NEXT_PUBLIC_GITHUB_APP_INSTALL_URL: z.string().url().optional(),
+  NEXT_PUBLIC_CLI_RELEASES_URL: z.string().url().optional(),
+  NEXT_PUBLIC_BREW_TAP: z.string().optional(),
 })
 
 // Combine schemas
@@ -52,6 +61,13 @@ function validateEnv(): Env {
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
     NEXT_PUBLIC_CRISP_WEBSITE_ID: process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID,
+    NEXT_PUBLIC_DASHBOARD_URL: process.env.NEXT_PUBLIC_DASHBOARD_URL,
+    NEXT_PUBLIC_LANDING_URL: process.env.NEXT_PUBLIC_LANDING_URL,
+    NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
+    NEXT_PUBLIC_CONTACT_EMAIL: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
+    NEXT_PUBLIC_GITHUB_APP_INSTALL_URL: process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL,
+    NEXT_PUBLIC_CLI_RELEASES_URL: process.env.NEXT_PUBLIC_CLI_RELEASES_URL,
+    NEXT_PUBLIC_BREW_TAP: process.env.NEXT_PUBLIC_BREW_TAP,
   })
 
   if (!parsed.success) {
@@ -78,5 +94,8 @@ export const POSTHOG_KEY = env.NEXT_PUBLIC_POSTHOG_KEY
 export const POSTHOG_HOST = env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://app.posthog.com'
 export const SENTRY_DSN = env.NEXT_PUBLIC_SENTRY_DSN
 export const CRISP_WEBSITE_ID = env.NEXT_PUBLIC_CRISP_WEBSITE_ID
+export const LANDING_URL = env.NEXT_PUBLIC_LANDING_URL ?? 'https://keyway.sh'
+export const DOCS_URL = env.NEXT_PUBLIC_DOCS_URL ?? 'https://docs.keyway.sh'
+export const CONTACT_EMAIL = env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'hello@keyway.sh'
 export const IS_PRODUCTION = env.NODE_ENV === 'production'
 export const IS_DEVELOPMENT = env.NODE_ENV === 'development'

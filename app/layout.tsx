@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     default: 'Dashboard | Keyway',
   },
   description: 'Manage your secrets and vaults',
-  metadataBase: new URL('https://app.keyway.sh'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.keyway.sh'),
   robots: {
     index: false,
     follow: false,

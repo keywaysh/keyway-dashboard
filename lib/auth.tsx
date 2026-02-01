@@ -66,12 +66,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     // Clear cookies (session cookie is HttpOnly in prod, but we set it client-side in dev)
     // Clear without domain for localhost, with domain for production
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const hostname = window.location.hostname
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
     if (isLocalhost) {
       document.cookie = 'keyway_logged_in=; Path=/; Max-Age=0'
       document.cookie = 'keyway_session=; Path=/; Max-Age=0'
     } else {
-      document.cookie = 'keyway_logged_in=; Path=/; Domain=.keyway.sh; Max-Age=0'
+      // Derive cookie domain from hostname:
+      // - .local domains (e.g., "app.keyway.local" -> "keyway.local")
+      // - production domains (e.g., "app.keyway.sh" -> ".keyway.sh")
+      const parts = hostname.split('.')
+      const isLocalDomain = hostname.endsWith('.local')
+      const cookieDomain = isLocalDomain
+        ? parts.slice(-2).join('.')
+        : parts.length >= 2 ? '.' + parts.slice(-2).join('.') : hostname
+      document.cookie = `keyway_logged_in=; Path=/; Domain=${cookieDomain}; Max-Age=0`
     }
     setUser(null)
     window.location.href = '/'
