@@ -78,7 +78,9 @@ export function OrgSwitcher({ onContextChange, className }: OrgSwitcherProps) {
         if (stored?.type === 'organization') {
           const exists = orgs.some(o => o.id === stored.id)
           if (!exists) {
-            setContext({ type: 'personal', id: null, login: null })
+            const fallback: OrgContext = { type: 'personal', id: null, login: null }
+            setContext(fallback)
+            setStoredContext(fallback)
           }
         }
       } catch (err) {
@@ -102,6 +104,7 @@ export function OrgSwitcher({ onContextChange, className }: OrgSwitcherProps) {
         const ctx: OrgContext = { type: 'organization', id: org.id, login: org.login }
         setContext(ctx)
         setStoredContext(ctx)
+        onContextChange?.(ctx)
       }
     }
   }, [pathname, organizations, context.login])

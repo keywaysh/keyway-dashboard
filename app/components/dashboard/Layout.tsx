@@ -33,6 +33,7 @@ function clearSessionCookies() {
       ? parts.slice(-2).join('.')
       : parts.length >= 2 ? '.' + parts.slice(-2).join('.') : hostname
     document.cookie = `keyway_logged_in=; Path=/; Domain=${cookieDomain}; Max-Age=0`
+    document.cookie = `keyway_session=; Path=/; Domain=${cookieDomain}; Max-Age=0`
   }
 }
 

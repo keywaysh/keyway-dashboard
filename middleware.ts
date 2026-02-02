@@ -38,11 +38,12 @@ function addSecurityHeaders(response: NextResponse, request: NextRequest) {
   const hasPosthog = !!process.env.NEXT_PUBLIC_POSTHOG_KEY
   const hasCrisp = !!process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID
 
-  const posthogScriptSrc = hasPosthog ? ' https://us.i.posthog.com https://app.posthog.com' : ''
+  const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com'
+  const posthogScriptSrc = hasPosthog ? ` ${posthogHost} https://us.i.posthog.com` : ''
   const crispScriptSrc = hasCrisp ? ' https://client.crisp.chat' : ''
   const crispStyleSrc = hasCrisp ? ' https://client.crisp.chat' : ''
   const crispFontSrc = hasCrisp ? ' https://client.crisp.chat' : ''
-  const posthogConnectSrc = hasPosthog ? ' https://us.i.posthog.com https://app.posthog.com' : ''
+  const posthogConnectSrc = hasPosthog ? ` ${posthogHost} https://us.i.posthog.com` : ''
   const crispConnectSrc = hasCrisp ? ' https://client.crisp.chat wss://client.relay.crisp.chat wss://stream.relay.crisp.chat https://storage.crisp.chat' : ''
   const crispFrameSrc = hasCrisp ? ' https://game.crisp.chat' : ''
 

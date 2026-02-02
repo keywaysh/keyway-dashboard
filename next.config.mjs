@@ -24,11 +24,9 @@ export default sentryEnabled
       silent: !process.env.CI,
       widenClientFileUpload: true,
       tunnelRoute: "/monitoring",
-      webpack: {
-        treeshake: {
-          removeDebugLogging: true,
-        },
-        ...(process.env.VERCEL ? { automaticVercelMonitors: true } : {}),
+      ...(process.env.VERCEL ? { automaticVercelMonitors: true } : {}),
+      bundleSizeOptimizations: {
+        excludeDebugStatements: true,
       },
     })
   : nextConfig;
