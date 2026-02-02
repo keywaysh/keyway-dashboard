@@ -7,41 +7,49 @@ import { z } from 'zod'
  * type-safe access to them throughout the application.
  */
 
+// Helper: treat empty strings as undefined (handles Docker Compose empty defaults like ${VAR:-})
+const emptyToUndefined = (v: unknown) => (v === '' ? undefined : v)
+
+// Optional URL/email fields that accept empty strings gracefully
+const optionalUrl = () => z.preprocess(emptyToUndefined, z.string().url().optional())
+const optionalEmail = () => z.preprocess(emptyToUndefined, z.string().email().optional())
+const optionalString = () => z.preprocess(emptyToUndefined, z.string().optional())
+
 // Schema for server-side environment variables
 const serverEnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
   // PostHog server-side (optional - for badge analytics)
-  POSTHOG_SERVER_API_KEY: z.string().optional(),
-  POSTHOG_HOST: z.string().url().optional(),
+  POSTHOG_SERVER_API_KEY: optionalString(),
+  POSTHOG_HOST: optionalUrl(),
 })
 
 // Schema for client-side environment variables (NEXT_PUBLIC_*)
 const clientEnvSchema = z.object({
   // Keyway API
-  NEXT_PUBLIC_KEYWAY_API_URL: z
-    .string()
-    .url()
-    .default('https://api.keyway.sh'),
+  NEXT_PUBLIC_KEYWAY_API_URL: z.preprocess(
+    emptyToUndefined,
+    z.string().url().default('https://api.keyway.sh'),
+  ),
 
   // PostHog analytics (optional)
-  NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
-  NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional(),
+  NEXT_PUBLIC_POSTHOG_KEY: optionalString(),
+  NEXT_PUBLIC_POSTHOG_HOST: optionalUrl(),
 
   // Sentry error tracking (optional)
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: optionalUrl(),
 
   // Crisp chat widget (optional)
-  NEXT_PUBLIC_CRISP_WEBSITE_ID: z.string().optional(),
+  NEXT_PUBLIC_CRISP_WEBSITE_ID: optionalString(),
 
   // Self-hosting configuration
-  NEXT_PUBLIC_DASHBOARD_URL: z.string().url().optional(),
-  NEXT_PUBLIC_LANDING_URL: z.string().url().optional(),
-  NEXT_PUBLIC_DOCS_URL: z.string().url().optional(),
-  NEXT_PUBLIC_CONTACT_EMAIL: z.string().email().optional(),
-  NEXT_PUBLIC_GITHUB_APP_INSTALL_URL: z.string().url().optional(),
-  NEXT_PUBLIC_CLI_RELEASES_URL: z.string().url().optional(),
-  NEXT_PUBLIC_BREW_TAP: z.string().optional(),
+  NEXT_PUBLIC_DASHBOARD_URL: optionalUrl(),
+  NEXT_PUBLIC_LANDING_URL: optionalUrl(),
+  NEXT_PUBLIC_DOCS_URL: optionalUrl(),
+  NEXT_PUBLIC_CONTACT_EMAIL: optionalEmail(),
+  NEXT_PUBLIC_GITHUB_APP_INSTALL_URL: optionalUrl(),
+  NEXT_PUBLIC_CLI_RELEASES_URL: optionalUrl(),
+  NEXT_PUBLIC_BREW_TAP: optionalString(),
 })
 
 // Combine schemas
