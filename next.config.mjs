@@ -1,5 +1,7 @@
 import { withSentryConfig } from '@sentry/nextjs';
 
+const sentryEnabled = !!process.env.SENTRY_DSN;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -15,16 +17,16 @@ const nextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
-  org: "keyway-0j",
-  project: "keyway-dashboard",
-  silent: !process.env.CI,
-  widenClientFileUpload: true,
-  tunnelRoute: "/monitoring",
-  webpack: {
-    treeshake: {
-      removeDebugLogging: true,
-    },
-    automaticVercelMonitors: true,
-  },
-});
+export default sentryEnabled
+  ? withSentryConfig(nextConfig, {
+      org: process.env.SENTRY_ORG || "keyway-0j",
+      project: process.env.SENTRY_PROJECT || "keyway-dashboard",
+      silent: !process.env.CI,
+      widenClientFileUpload: true,
+      tunnelRoute: "/monitoring",
+      ...(process.env.VERCEL ? { automaticVercelMonitors: true } : {}),
+      bundleSizeOptimizations: {
+        excludeDebugStatements: true,
+      },
+    })
+  : nextConfig;

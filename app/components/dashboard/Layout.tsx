@@ -18,12 +18,22 @@ const SIDEBAR_COLLAPSED_KEY = 'keyway_sidebar_collapsed'
 
 // Clear session cookies
 function clearSessionCookies() {
-  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  const hostname = window.location.hostname
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
   if (isLocalhost) {
     document.cookie = 'keyway_logged_in=; Path=/; Max-Age=0'
     document.cookie = 'keyway_session=; Path=/; Max-Age=0'
   } else {
-    document.cookie = 'keyway_logged_in=; Path=/; Domain=.keyway.sh; Max-Age=0'
+    // Derive cookie domain from hostname:
+    // - .local domains (e.g., "app.keyway.local" -> "keyway.local")
+    // - production domains (e.g., "app.keyway.sh" -> ".keyway.sh")
+    const parts = hostname.split('.')
+    const isLocalDomain = hostname.endsWith('.local')
+    const cookieDomain = isLocalDomain
+      ? parts.slice(-2).join('.')
+      : parts.length >= 2 ? '.' + parts.slice(-2).join('.') : hostname
+    document.cookie = `keyway_logged_in=; Path=/; Domain=${cookieDomain}; Max-Age=0`
+    document.cookie = `keyway_session=; Path=/; Domain=${cookieDomain}; Max-Age=0`
   }
 }
 
@@ -114,8 +124,8 @@ export function DashboardLayout({ children }: LayoutProps) {
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
                   If this problem persists, contact us at{' '}
-                  <a href="mailto:hello@keyway.sh" className="underline hover:text-foreground">
-                    hello@keyway.sh
+                  <a href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@keyway.sh'}`} className="underline hover:text-foreground">
+                    {process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@keyway.sh'}
                   </a>
                 </p>
               </div>

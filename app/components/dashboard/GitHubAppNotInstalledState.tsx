@@ -13,7 +13,8 @@ export function GitHubAppNotInstalledState({ error, onRetry }: GitHubAppNotInsta
 
   // Extract install URL if present
   const urlMatch = error.match(/(https:\/\/github\.com\/apps\/[^\s]+)/)
-  const installUrl = urlMatch ? urlMatch[1] : 'https://github.com/apps/keyway/installations/new'
+  const defaultInstallUrl = process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || 'https://github.com/apps/keyway/installations/new'
+  const installUrl = urlMatch ? urlMatch[1] : defaultInstallUrl
 
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">

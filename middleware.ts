@@ -33,16 +33,28 @@ export function middleware(request: NextRequest) {
 
 function addSecurityHeaders(response: NextResponse, request: NextRequest) {
   // Content Security Policy (CSP)
-  // Allow PostHog analytics, GitHub avatars, and Crisp chat
+  // Allow PostHog analytics, GitHub avatars, and Crisp chat (conditionally)
   const apiUrl = process.env.NEXT_PUBLIC_KEYWAY_API_URL || 'https://api.keyway.sh'
+  const hasPosthog = !!process.env.NEXT_PUBLIC_POSTHOG_KEY
+  const hasCrisp = !!process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID
+
+  const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com'
+  const posthogScriptSrc = hasPosthog ? ` ${posthogHost} https://us.i.posthog.com` : ''
+  const crispScriptSrc = hasCrisp ? ' https://client.crisp.chat' : ''
+  const crispStyleSrc = hasCrisp ? ' https://client.crisp.chat' : ''
+  const crispFontSrc = hasCrisp ? ' https://client.crisp.chat' : ''
+  const posthogConnectSrc = hasPosthog ? ` ${posthogHost} https://us.i.posthog.com` : ''
+  const crispConnectSrc = hasCrisp ? ' https://client.crisp.chat wss://client.relay.crisp.chat wss://stream.relay.crisp.chat https://storage.crisp.chat' : ''
+  const crispFrameSrc = hasCrisp ? ' https://game.crisp.chat' : ''
+
   const cspDirectives = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://us.i.posthog.com https://app.posthog.com https://client.crisp.chat",
-    "style-src 'self' 'unsafe-inline' https://client.crisp.chat",
+    `script-src 'self' 'unsafe-inline' 'unsafe-eval'${posthogScriptSrc}${crispScriptSrc}`,
+    `style-src 'self' 'unsafe-inline'${crispStyleSrc}`,
     "img-src 'self' data: https: blob:",
-    "font-src 'self' data: https://client.crisp.chat",
-    `connect-src 'self' https://us.i.posthog.com https://app.posthog.com ${apiUrl} https://localhost https://client.crisp.chat wss://client.relay.crisp.chat wss://stream.relay.crisp.chat https://storage.crisp.chat`,
-    "frame-src https://game.crisp.chat",
+    `font-src 'self' data:${crispFontSrc}`,
+    `connect-src 'self'${posthogConnectSrc} ${apiUrl} https://localhost${crispConnectSrc}`,
+    `frame-src 'self'${crispFrameSrc}`,
     "worker-src 'self' blob:",
     "frame-ancestors 'none'",
     "base-uri 'self'",

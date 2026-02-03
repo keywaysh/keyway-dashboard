@@ -1,18 +1,22 @@
 export type Platform = 'mac' | 'linux' | 'windows'
 
+const landingUrl = process.env.NEXT_PUBLIC_LANDING_URL || 'https://keyway.sh'
+const cliReleasesUrl = process.env.NEXT_PUBLIC_CLI_RELEASES_URL || 'https://github.com/keywaysh/cli/releases/latest'
+const brewTap = process.env.NEXT_PUBLIC_BREW_TAP || 'keywaysh/tap/keyway'
+
 export const CLI_INSTALL = {
   mac: {
-    command: 'brew install keywaysh/tap/keyway',
+    command: `brew install ${brewTap}`,
     copyable: true,
   },
   linux: {
-    command: 'curl -fsSL https://keyway.sh/install.sh | sh',
+    command: `curl -fsSL ${landingUrl}/install.sh | sh`,
     copyable: true,
   },
   windows: {
     command: 'Download for Windows',
     copyable: false,
-    href: 'https://github.com/keywaysh/cli/releases/latest',
+    href: cliReleasesUrl,
   },
 } as const
 
@@ -30,7 +34,8 @@ export const CLI_NPX = {
   sync: 'npx @keywaysh/cli sync',
 } as const
 
-export const CLI_DOCS_URL = 'https://docs.keyway.sh/installation'
+const docsUrl = process.env.NEXT_PUBLIC_DOCS_URL || 'https://docs.keyway.sh'
+export const CLI_DOCS_URL = `${docsUrl}/installation`
 
 export function detectPlatform(): Platform {
   if (typeof window === 'undefined') return 'mac'
