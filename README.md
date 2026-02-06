@@ -5,7 +5,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Manage your secrets visually.** The web interface for [Keyway](https://keyway.sh).
+**The web dashboard for [Keyway](https://keyway.sh)** — GitHub-native secrets management.
 
 <p align="center">
   <img src=".github/screenshot.png" alt="Keyway Dashboard" width="800">
@@ -15,13 +15,13 @@
 
 ## Features
 
-- 🔐 **Visual secret management** — Create, edit, and organize secrets across environments
-- 🔄 **Provider sync** — Push secrets to Vercel, Railway, Netlify
-- 👥 **Team collaboration** — GitHub-based permissions, no separate access control
-- 📊 **Audit trail** — See who accessed what, when, and from where
-- 🚨 **Security alerts** — Get notified of suspicious access patterns
-- 🗂️ **Version history** — Track changes and restore previous values
-- 🗑️ **Soft delete** — 30-day recovery window for deleted secrets
+- **Visual secret management** — Create, edit, and organize secrets across environments
+- **Provider sync** — Push secrets to Vercel, Railway, Netlify
+- **Team collaboration** — GitHub-based permissions, no separate access control
+- **Audit trail** — See who accessed what, when, and from where
+- **Security alerts** — Get notified of suspicious access patterns
+- **Version history** — Track changes and restore previous values
+- **Soft delete** — 30-day recovery window for deleted secrets
 
 ---
 
@@ -81,10 +81,11 @@ pnpm dev
 
 ## Related
 
-- [keyway-backend](https://github.com/keywaysh/keyway-backend) — API server
 - [cli](https://github.com/keywaysh/cli) — Command-line tool
-- [keyway-docs](https://github.com/keywaysh/keyway-docs) — Documentation
+- [keyway-backend](https://github.com/keywaysh/keyway-backend) — API server
+- [keyway-mcp](https://github.com/keywaysh/keyway-mcp) — MCP server for AI assistants
 - [keyway-action](https://github.com/keywaysh/keyway-action) — GitHub Action
+- [keyway-docs](https://github.com/keywaysh/keyway-docs) — Documentation
 
 ---
 
